@@ -1,0 +1,87 @@
+int input1 = 2;
+int input2 = 3;
+int enable1 = 22;
+
+int input3 = 4;
+int input4 = 5;
+int enable2 = 24;
+
+void setup() 
+{
+
+  Serial.begin(9600);
+
+  pinMode(input1, OUTPUT);
+  pinMode(input2, OUTPUT);
+  pinMode(enable1, OUTPUT);
+
+  pinMode(input3, OUTPUT);
+  pinMode(input4, OUTPUT);
+  pinMode (enable2, OUTPUT);
+
+  digitalWrite(enable1, HIGH);
+  digitalWrite(enable2, HIGH);
+}
+
+void loop() 
+{
+  /*moveForward(200);
+  brake();
+  turnRight();
+  moveForward(200);
+  brake();
+  moveBackward(200);
+  brake();
+  turnLeft();
+  moveForward(200);
+  brake();
+  */
+
+  turnRight();
+}
+
+void brake()
+{
+  digitalWrite(input1, LOW);
+  digitalWrite(input2, LOW);
+  digitalWrite(input3, LOW);
+  digitalWrite(input4, LOW);
+}
+
+void moveForward(int speed)
+{
+    analogWrite(input1, speed); //Makes  motor 1 go clockwise
+    analogWrite(input4, speed); //Makes motor 2 go counter-clockwise   
+
+    delay(2000);
+}
+
+
+void moveBackward(int speed)
+{
+    analogWrite(input2, speed); //Makes motor 1 go counter-clockwise
+    analogWrite(input3, speed); //Makes motor 2 go clockwise
+
+    delay(2000);
+}
+
+void turnLeft()
+{  
+    digitalWrite (input1, HIGH);
+    digitalWrite(input3, HIGH);
+
+    delay(1000);
+    
+    brake();
+}
+
+
+void turnRight()
+{  
+  digitalWrite (input3, HIGH);
+  digitalWrite(input2, HIGH);
+
+  delay(1000);
+  
+  brake();
+}
