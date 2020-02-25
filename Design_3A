@@ -1,20 +1,29 @@
 int photodiode_pin = 3;
-int blueLed_pin = 2;
-int redLed_pin = 3;
+int blueLed_pin = 9;
+int redLed_pin = 8;
 
-int blue_path = 4;
-int red_path = 5;
-int yellow_path = 6;
+int blue_path = 10;
+int red_path = 12;
+int yellow_path = 11;
 
 int hall_sensor = 1;
-int magnet_LED = 9;
+int magnet_LED = 13;  //orange LED
 
-int black = 10;
+int black = 330;
 
 //0: black, 1: blue, 2: red, 3: yellow
 int current_color = 0;
 
 int reps = 10;
+
+
+int input1 = 2;
+int input2 = 3;
+int enable1 = 22;
+
+int input3 = 4;
+int input4 = 5;
+int enable2 = 24;
 
 void setup() 
 {
@@ -31,16 +40,27 @@ void setup()
 
     pinMode(black, OUTPUT);
 
+    pinMode(input1, OUTPUT);
+    pinMode(input2, OUTPUT);
+    pinMode(enable1, OUTPUT);
+  
+    pinMode(input3, OUTPUT);
+    pinMode(input4, OUTPUT);
+    pinMode (enable2, OUTPUT);
+  
+    digitalWrite(enable1, HIGH);
+    digitalWrite(enable2, HIGH);
+
+    Serial.begin (9600);
     get_black_value();
     current_color = 0;
 }
 
 void loop() 
 {
-    detect_magnet();
-    if (photodiode_pin - black > 20)
+    if (analogRead(photodiode_pin) - black > 20)
     {
-        int both = photodiode_pin;
+        int both = analogRead(photodiode_pin);
         int just_red = flash_red();
         int just_blue = flash_blue();
 
@@ -57,7 +77,7 @@ void loop()
             digitalWrite (red_path, HIGH);
             current_color = 2;
         }
-        else if (photodiode_pin - black > 80)
+        else if (analogRead(photodiode_pin) - black > 80)
         {
             digitalWrite (yellow_path, HIGH);
             current_color = 3;
@@ -68,8 +88,18 @@ void loop()
         current_color = 0;
     }
 
-    Serial.println (current_color);
+    Serial.println (analogRead(photodiode_pin));
+    detect_magnet();
     
+
+    if (current_color == 1)
+    {
+      moveForward(200);
+    }
+    else
+    {
+      brake();
+    }
 }
 
 void get_black_value ()
@@ -97,7 +127,6 @@ int flash_blue ()
     for (int i = 0; i < reps; i ++)
     {
         sum += analogRead(photodiode_pin);
-        delay (5);
     }
     return sum / reps;  
     
@@ -113,7 +142,6 @@ int flash_red ()
     for (int i = 0; i < reps; i ++)
     {
         sum += analogRead(photodiode_pin);
-        delay (5);
     }
     return sum / reps;      
 }
@@ -123,4 +151,20 @@ void detect_magnet()
 {
    if (hall_sensor > 150)
        digitalWrite(magnet_LED, HIGH);
+}
+
+
+void moveForward(int speed)
+{
+    analogWrite(input1, speed); //Makes  motor 1 go clockwise
+    analogWrite(input4, speed - 50); //Makes motor 2 go counter-clockwise   
+
+    delay(2000);
+}
+void brake()
+{
+  digitalWrite(input1, LOW);
+  digitalWrite(input2, LOW);
+  digitalWrite(input3, LOW);
+  digitalWrite(input4, LOW);
 }
