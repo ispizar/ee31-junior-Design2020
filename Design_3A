@@ -1,0 +1,126 @@
+int photodiode_pin = 3;
+int blueLed_pin = 2;
+int redLed_pin = 3;
+
+int blue_path = 4;
+int red_path = 5;
+int yellow_path = 6;
+
+int hall_sensor = 1;
+int magnet_LED = 9;
+
+int black = 10;
+
+//0: black, 1: blue, 2: red, 3: yellow
+int current_color = 0;
+
+int reps = 10;
+
+void setup() 
+{
+    pinMode(photodiode_pin, INPUT);
+    pinMode(blueLed_pin, OUTPUT);
+    pinMode(redLed_pin, OUTPUT);
+    
+    pinMode(blue_path, OUTPUT);
+    pinMode(red_path, OUTPUT);
+    pinMode(yellow_path, OUTPUT);
+    
+    pinMode(hall_sensor, INPUT);
+    pinMode(magnet_LED, OUTPUT);
+
+    pinMode(black, OUTPUT);
+
+    get_black_value();
+    current_color = 0;
+}
+
+void loop() 
+{
+    detect_magnet();
+    if (photodiode_pin - black > 20)
+    {
+        int both = photodiode_pin;
+        int just_red = flash_red();
+        int just_blue = flash_blue();
+
+        digitalWrite(blueLed_pin, HIGH);
+        digitalWrite(redLed_pin, HIGH);
+
+        if (both - black < 80 && just_blue > just_red)
+        {
+            digitalWrite (blue_path, HIGH);
+            current_color = 1;
+        }
+        else if (both - black < 80 && just_blue < just_red)
+        {
+            digitalWrite (red_path, HIGH);
+            current_color = 2;
+        }
+        else if (photodiode_pin - black > 80)
+        {
+            digitalWrite (yellow_path, HIGH);
+            current_color = 3;
+        }
+    }
+    else
+    {
+        current_color = 0;
+    }
+
+    Serial.println (current_color);
+    
+}
+
+void get_black_value ()
+{
+    digitalWrite(blueLed_pin, HIGH);
+    digitalWrite(redLed_pin, HIGH);
+    
+    int sum = 0;
+    
+    for (int i = 0; i < reps; i ++)
+    {
+        sum += analogRead(photodiode_pin);
+        delay (5);
+    }
+    black = sum / reps;  
+}
+
+int flash_blue ()
+{
+    digitalWrite (redLed_pin, LOW);
+    digitalWrite (blueLed_pin, HIGH);
+
+    int sum = 0;
+    
+    for (int i = 0; i < reps; i ++)
+    {
+        sum += analogRead(photodiode_pin);
+        delay (5);
+    }
+    return sum / reps;  
+    
+}
+
+int flash_red ()
+{
+    digitalWrite (redLed_pin, HIGH);
+    digitalWrite (blueLed_pin, LOW);
+
+    int sum = 0;
+    
+    for (int i = 0; i < reps; i ++)
+    {
+        sum += analogRead(photodiode_pin);
+        delay (5);
+    }
+    return sum / reps;      
+}
+
+
+void detect_magnet()
+{
+   if (hall_sensor > 150)
+       digitalWrite(magnet_LED, HIGH);
+}
